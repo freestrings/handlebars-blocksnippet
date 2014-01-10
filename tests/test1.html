@@ -1,0 +1,123 @@
+<script>
+    //var _debug_ = true;
+</script>
+<script src="../handlebars-1.0.0.beta.6.js"></script>
+<script src="../handlebars.blocksnippet.js"></script>
+<script>
+
+String.prototype.trim = function() {
+    return this.replace(/(^\s*)|(\s*$)/gi, "");
+}
+
+// register 'helperTest'
+Handlebars.registerHelper('helperTest', function(testValue) {
+  return "%helperTest: " + testValue;
+});
+
+var Test = {
+    isEqual: function(originValue, expected, func) {
+        var values = [];
+        originValue.split("\n").forEach(function(value) {
+            values.push(value.trim());
+        });
+        if(values.join("").trim() === expected) {
+            func();
+            console.log();
+        } else {
+            console.error("not match", originValue, expected);
+        }
+    }
+}
+
+function createXHR() {
+    var xhr;
+    if (window.ActiveXObject) {
+        try {
+            xhr = new ActiveXObject("Microsoft.XMLHTTP");
+        } catch(e) {
+            alert(e.message);
+            xhr = null;
+        }
+    } else {
+        xhr = new XMLHttpRequest();
+    }
+
+    return xhr;
+}
+
+function getTempate(callback) {
+    var xhr = createXHR();
+    xhr.onreadystatechange = function()
+    {
+        if (xhr.readyState === 4)
+        {
+            callback(xhr.responseText);
+        }
+    }
+    xhr.open('GET', 'test.mu', true)
+    xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+    xhr.send()
+}
+
+getTempate(function(text) {
+
+    // general case
+    var result = Handlebars.blockSnippet(text, "root", {
+        "title": "title"
+        , "child1": {
+            "value1": "child1.value1"
+        }
+        , "child2": {
+            "value1": "child2.value1"
+        }
+
+    });
+
+    Test.isEqual(result, "title,root.child1: child1.value1,root.child2: child2.value1,%helperTest: title", function() {
+        console.log("@match find root");
+    });
+
+
+    // root/child1 node
+    result = Handlebars.blockSnippet(text, "root.child1", {
+        "value1": "child1.value1"
+    });
+
+    Test.isEqual(result, "root.child1: child1.value1,", function() {
+        console.log("@match root.child1");
+    });
+
+
+    // Handlebars helper test
+    result = Handlebars.blockSnippet(text, "root.helperTest", {
+        "title": "helperTest.title"
+    });
+
+    Test.isEqual(result, "%helperTest: helperTest.title", function() {
+        console.log("@match root.helperTest");
+    });
+
+
+    // all the child3 node3
+    result = Handlebars.blockSnippet(text, "child3", {
+        "value1": "value1",
+        "child4": {
+            "child3": true
+        }
+    });
+
+    Test.isEqual(result, "root.child3-1: value1,root.child3-2: value1,root.child4.child3-3: value1,root.child4.child3-4: value1", function() {
+        console.log("@match all child3");
+    });
+
+    result = Handlebars.blockSnippet(text, "root.child4.child3", {
+        "value1": "value1"
+    });
+
+    Test.isEqual(result, "root.child4.child3-3: value1,root.child4.child3-4: value1", function() {
+        console.log("@match all2 child3");
+    });
+
+});
+
+</script>
