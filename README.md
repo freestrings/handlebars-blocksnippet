@@ -1,4 +1,3 @@
-
 Simple partial snippet path library for Handlebars
 ---
 
@@ -8,6 +7,8 @@ Simple Usage
 There might be so many partials on real project that is based on [Handlebars](http://handlebarsjs.com). Let's maintain all the templates on single file.
 
 Make a path using block like `path1.path2` it is very easy.
+
+####See [usecase](./tests/test1.html).
 
 Template sample
 -------------------
